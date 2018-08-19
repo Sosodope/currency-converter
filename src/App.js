@@ -1,32 +1,31 @@
 import React, { Component } from "react";
 import "./App.css";
-import Converter from "./components/Converter";
 import Form from "./components/Form";
-import { Container, Row, Col } from "react-grid-system";
 
 class App extends Component {
   state = {
-    base: "",
-    target: "",
+    base: "USD",
+    target: "GBP",
     amount: "",
     conversionRate: "",
     convertedAmount: ""
   };
   getTargetRate = () => {
-    fetch("https://api.exchangeratesapi.io/latest?base=USD")
+    const target = this.state.target.toUpperCase();
+    const base = this.state.base.toUpperCase();
+    fetch(`https://api.exchangeratesapi.io/latest?base=${base}`)
       .then(res => res.json())
       .then(data => {
-        const result = data.rates[this.state.target];
+        const result = data.rates[target];
         this.setState({ conversionRate: result });
+        const conversionRate = this.state.conversionRate;
+        const amount = this.state.amount;
+        const convertedAmount = conversionRate * amount;
+        this.setState({ convertedAmount });
+        console.log(this.state.conversionRate);
       });
   };
-  getConversionAmount = () => {
-    const conversionRate = this.state.conversionRate;
-    const amount = this.state.amount;
-    const convertedAmount = conversionRate * amount;
-    this.setState({ convertedAmount });
-    console.log(this.state.conversionRate);
-  };
+
   handleSubmit = e => {
     e.preventDefault();
     this.setState({
@@ -35,7 +34,6 @@ class App extends Component {
       base: this.state.base
     });
     this.getTargetRate();
-    this.getConversionAmount();
   };
   handleChange = e => {
     const {
@@ -45,21 +43,17 @@ class App extends Component {
   };
   render() {
     return (
-      <Container>
-        <Row>
-          <Col sm={8}>
-            <h1>Currency Converter</h1>
-            <Form
-              base={this.state.base}
-              amount={this.state.amount}
-              target={this.state.target}
-              handleChange={this.handleChange}
-              handleSubmit={this.handleSubmit}
-            />
-            <Converter amount={this.state.convertedAmount} />
-          </Col>
-        </Row>
-      </Container>
+      <div className="content">
+        <h1>Currency Converter</h1>
+        <Form
+          base={this.state.base}
+          amount={this.state.amount}
+          target={this.state.target}
+          convertedAmount={this.state.convertedAmount}
+          handleChange={this.handleChange}
+          handleSubmit={this.handleSubmit}
+        />
+      </div>
     );
   }
 }
